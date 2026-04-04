@@ -1,0 +1,15 @@
+# Frontend (Next.js)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env
+frontend/.env.local
+
+# Backend (Python/FastAPI)
+backend/venv/
+backend/__pycache__/
+backend/*.db
+backend/.env
+
+# OS
+.DS_Store
