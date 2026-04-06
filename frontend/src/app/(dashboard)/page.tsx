@@ -69,7 +69,7 @@ export default function Home() {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-slate-900 tracking-tight">👋 Welcome to the Sales and Marketing hub.Central Hub</h2>
+        <h2 className="text-3xl font-bold text-slate-900 tracking-tight">👋 Welcome to the Sales and Marketing hub</h2>
         <p className="text-slate-500 mt-2">Click the link in your desired category to navigate to the relevant section. You can find access details in the left-hand menu.</p>
           <p className="text-slate-500 mt-2">For connections without account credentials, please ensure your email address has been authorized.</p>
       </div>
