@@ -7,7 +7,7 @@ import api from "@/services/api";
 
 // API'den gelecek verinin tip tanımlamaları
 interface HubLink {
-  id: int;
+  id: number;
   name: string;
   url: string;
 }
