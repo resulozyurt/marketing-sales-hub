@@ -1,8 +1,10 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+// Bypassing Next.js build cache by hardcoding the exact Production Backend URL
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://marketing-sales-hub-production.up.railway.app/api/v1',
+  // DİKKAT: Buradaki adresi kendi gerçek backend domainin ile değiştirdiğinden emin ol!
+  baseURL: 'https://marketing-sales-hub-production.up.railway.app/api/v1', 
 });
 
 // Request Interceptor: Automatically attach the JWT token to every request
