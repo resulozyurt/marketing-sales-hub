@@ -1,11 +1,12 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 
 # Veritabanı ve modelleri içeri aktarıyoruz
 from app.db.database import engine, Base
-from app.models import user, hub  # hub eklendi
-from app.api.v1 import auth, hub  # hub eklendi
+from app.models import user, hub
+from app.api.v1 import auth, hub 
 
 # Sunucu başlarken veritabanı tablolarını otomatik oluştur
 Base.metadata.create_all(bind=engine)
@@ -18,18 +19,25 @@ app = FastAPI(
 )
 
 # Setup CORS Middleware
-# This is crucial for Next.js (port 3000) to communicate with FastAPI (port 8000) securely.
+# Fetch the frontend URL from environment variables and add it to allowed origins
+allowed_origins = list(settings.BACKEND_CORS_ORIGINS)
+frontend_url = os.getenv("FRONTEND_URL")
+
+if frontend_url and frontend_url not in allowed_origins:
+    allowed_origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-from app.api.v1 import auth
+
 # Include Routers
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
-app.include_router(hub.router, prefix=f"{settings.API_V1_STR}/hub", tags=["Hub Management"]) # Bu satır eklendi
+app.include_router(hub.router, prefix=f"{settings.API_V1_STR}/hub", tags=["Hub Management"])
+
 # Health Check Endpoint
 @app.get("/", tags=["Health"])
 def read_root():
