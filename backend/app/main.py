@@ -7,6 +7,8 @@ from app.core.config import settings
 from app.db.database import engine, Base
 from app.models import user, hub
 from app.api.v1 import auth, hub 
+from app.models import user, hub, account  # account eklendi
+from app.api.v1 import auth, hub, account  # account eklendi
 
 # Sunucu başlarken veritabanı tablolarını otomatik oluştur
 Base.metadata.create_all(bind=engine)
@@ -37,6 +39,9 @@ app.add_middleware(
 # Include Routers
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
 app.include_router(hub.router, prefix=f"{settings.API_V1_STR}/hub", tags=["Hub Management"])
+app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
+app.include_router(hub.router, prefix=f"{settings.API_V1_STR}/hub", tags=["Hub Management"])
+app.include_router(account.router, prefix=f"{settings.API_V1_STR}/accounts", tags=["Account Details"])
 
 # Health Check Endpoint
 @app.get("/", tags=["Health"])
