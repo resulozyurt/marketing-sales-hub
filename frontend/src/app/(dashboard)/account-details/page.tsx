@@ -137,8 +137,7 @@ export default function AccountDetailsPage() {
           <h2 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center">
             <Shield className="w-8 h-8 mr-3 text-indigo-600" />
             Account Details
-          </h2>
-          <p className="text-slate-500 mt-1">Securely manage credentials for marketing and sales platforms.</p>
+          </h2>          
         </div>
         <button 
           onClick={openModalForAdd}
