@@ -8,12 +8,13 @@ from app.schemas.account import AccountDetailCreate, AccountDetailUpdate, Accoun
 
 router = APIRouter()
 
-@router.get("/", response_model=List[AccountDetailResponse])
+# DİKKAT: Buradaki "/" işaretlerini "" (boş) olarak düzelttik
+@router.get("", response_model=List[AccountDetailResponse])
 def get_accounts(db: Session = Depends(get_db)):
     # Order by newest first
     return db.query(AccountDetail).order_by(AccountDetail.id.desc()).all()
 
-@router.post("/", response_model=AccountDetailResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=AccountDetailResponse, status_code=status.HTTP_201_CREATED)
 def create_account(account_in: AccountDetailCreate, db: Session = Depends(get_db)):
     new_account = AccountDetail(**account_in.model_dump())
     db.add(new_account)
