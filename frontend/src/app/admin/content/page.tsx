@@ -3,19 +3,17 @@
 import { useState, useEffect } from "react";
 import { 
   FolderPlus, Link as LinkIcon, AlertCircle, CheckCircle2, 
-  Trash2, Edit2, X, Plus
+  Trash2, Edit2, X
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import api from "@/services/api";
 
-// Sık kullanılan ikonların listesi (Görsel seçici için)
 const ICON_OPTIONS = [
   "LayoutDashboard", "MousePointerClick", "Search", "Share2", "TrendingUp", 
   "MonitorSmartphone", "Users", "Settings", "Mail", "FileText", "PieChart", 
   "Activity", "Briefcase", "BarChart", "ShoppingCart", "Globe", "Zap", "Target"
 ];
 
-// Tailwind renk paleti (Görsel seçici için)
 const COLOR_OPTIONS = [
   "bg-blue-500", "bg-indigo-500", "bg-purple-500", "bg-pink-500", "bg-red-500", 
   "bg-orange-500", "bg-yellow-500", "bg-green-500", "bg-emerald-500", "bg-teal-500", 
@@ -23,19 +21,20 @@ const COLOR_OPTIONS = [
 ];
 
 interface HubLink { id: number; name: string; url: string; category_id: string; }
-interface Category { id: string; title: string; icon: string; color: string; links: HubLink[]; }
+// NEW: sort_order arayüze eklendi
+interface Category { id: string; title: string; icon: string; color: string; sort_order: number; links: HubLink[]; }
 
 export default function ContentManager() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [status, setStatus] = useState({ type: "", message: "" });
   const [isLoading, setIsLoading] = useState(false);
 
-  // Form States (Ekleme ve Düzenleme için ortak)
   const [isEditingCat, setIsEditingCat] = useState(false);
   const [catId, setCatId] = useState("");
   const [catTitle, setCatTitle] = useState("");
   const [catIcon, setCatIcon] = useState(ICON_OPTIONS[0]);
   const [catColor, setCatColor] = useState(COLOR_OPTIONS[0]);
+  const [catSortOrder, setCatSortOrder] = useState<number>(0); // NEW: State eklendi
 
   const [linkCategoryId, setLinkCategoryId] = useState("");
   const [linkName, setLinkName] = useState("");
@@ -58,22 +57,23 @@ export default function ContentManager() {
     setTimeout(() => setStatus({ type: "", message: "" }), 3000);
   };
 
-  // Dinamik İkon Getirici
   const getIcon = (iconName: string) => {
     const IconComponent = (LucideIcons as any)[iconName];
     return IconComponent ? <IconComponent className="w-5 h-5" /> : <LucideIcons.HelpCircle className="w-5 h-5" />;
   };
 
-  // ================= CATEGORY İŞLEMLERİ =================
   const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      // NEW: sort_order API'ye gönderiliyor
+      const payload = { title: catTitle, icon: catIcon, color: catColor, sort_order: catSortOrder };
+      
       if (isEditingCat) {
-        await api.put(`/hub/categories/${catId}`, { title: catTitle, icon: catIcon, color: catColor });
+        await api.put(`/hub/categories/${catId}`, payload);
         showStatus("success", "Category updated!");
       } else {
-        await api.post("/hub/categories", { id: catId, title: catTitle, icon: catIcon, color: catColor });
+        await api.post("/hub/categories", { id: catId, ...payload });
         showStatus("success", "Category created!");
       }
       resetCatForm();
@@ -95,15 +95,24 @@ export default function ContentManager() {
   };
 
   const editCategory = (cat: Category) => {
-    setIsEditingCat(true); setCatId(cat.id); setCatTitle(cat.title); setCatIcon(cat.icon); setCatColor(cat.color);
+    setIsEditingCat(true); 
+    setCatId(cat.id); 
+    setCatTitle(cat.title); 
+    setCatIcon(cat.icon); 
+    setCatColor(cat.color);
+    setCatSortOrder(cat.sort_order || 0); // NEW: Edit modunda doldur
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resetCatForm = () => {
-    setIsEditingCat(false); setCatId(""); setCatTitle(""); setCatIcon(ICON_OPTIONS[0]); setCatColor(COLOR_OPTIONS[0]);
+    setIsEditingCat(false); 
+    setCatId(""); 
+    setCatTitle(""); 
+    setCatIcon(ICON_OPTIONS[0]); 
+    setCatColor(COLOR_OPTIONS[0]);
+    setCatSortOrder(0); // NEW: Formu sıfırla
   };
 
-  // ================= LINK İŞLEMLERİ =================
   const handleSaveLink = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -142,9 +151,7 @@ export default function ContentManager() {
         </div>
       )}
 
-      {/* FORMS SECTION */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        
         {/* CATEGORY FORM */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
@@ -156,7 +163,7 @@ export default function ContentManager() {
           </div>
           
           <form onSubmit={handleSaveCategory} className="p-6 space-y-5">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">ID (Slug)</label>
                 <input type="text" required disabled={isEditingCat} value={catId} onChange={(e) => setCatId(e.target.value.toLowerCase().replace(/\s+/g, '-'))} placeholder="e.g. hr-metrics" className="w-full px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-slate-100" />
@@ -165,9 +172,13 @@ export default function ContentManager() {
                 <label className="block text-sm font-medium text-slate-700 mb-1">Display Title</label>
                 <input type="text" required value={catTitle} onChange={(e) => setCatTitle(e.target.value)} placeholder="e.g. Human Resources" className="w-full px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
               </div>
+              {/* NEW: Sort Order Input */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Sort Order</label>
+                <input type="number" required value={catSortOrder} onChange={(e) => setCatSortOrder(Number(e.target.value))} className="w-full px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+              </div>
             </div>
 
-            {/* VISUAL ICON PICKER */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Select Icon</label>
               <div className="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 h-32 overflow-y-auto">
@@ -179,7 +190,6 @@ export default function ContentManager() {
               </div>
             </div>
 
-            {/* VISUAL COLOR PICKER */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Select Color Theme</label>
               <div className="flex flex-wrap gap-3">
@@ -230,9 +240,13 @@ export default function ContentManager() {
         </div>
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           {categories.map((cat) => (
-            <div key={cat.id} className="border border-slate-200 rounded-xl p-4">
+            <div key={cat.id} className="border border-slate-200 rounded-xl p-4 relative">
+              {/* NEW: Badge for sort order */}
+              <div className="absolute -top-3 -left-3 w-8 h-8 bg-indigo-100 text-indigo-700 font-bold rounded-full flex items-center justify-center text-sm border-2 border-white shadow-sm">
+                {cat.sort_order}
+              </div>
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3 ml-2">
                   <div className={`p-2 rounded-lg text-white ${cat.color}`}>{getIcon(cat.icon)}</div>
                   <h4 className="font-bold text-slate-800">{cat.title}</h4>
                 </div>

@@ -17,7 +17,8 @@ router = APIRouter()
 # ==========================================
 @router.get("/categories", response_model=List[HubCategoryResponse])
 def get_categories(db: Session = Depends(get_db)):
-    return db.query(HubCategory).all()
+    # NEW: Kategorileri sort_order değerine göre küçükten büyüğe (ascending) sıralıyoruz
+    return db.query(HubCategory).order_by(HubCategory.sort_order.asc()).all()
 
 @router.post("/categories", response_model=HubCategoryResponse, status_code=status.HTTP_201_CREATED)
 def create_category(category_in: HubCategoryCreate, db: Session = Depends(get_db)):

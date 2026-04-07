@@ -26,6 +26,7 @@ class HubCategoryBase(BaseModel):
     title: str
     icon: str
     color: str
+    sort_order: int = 0  # NEW: Şemaya eklendi
 
 class HubCategoryCreate(HubCategoryBase):
     pass
@@ -34,6 +35,7 @@ class HubCategoryUpdate(BaseModel):
     title: Optional[str] = None
     icon: Optional[str] = None
     color: Optional[str] = None
+    sort_order: Optional[int] = None  # NEW: Güncelleme şemasına eklendi
 
 class HubCategoryResponse(HubCategoryBase):
     links: List[HubLinkResponse] = []

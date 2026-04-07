@@ -9,6 +9,7 @@ class HubCategory(Base):
     title = Column(String, nullable=False)
     icon = Column(String, nullable=False)
     color = Column(String, nullable=False)
+    sort_order = Column(Integer, default=0)  # NEW: Sıralama sütunu eklendi
     links = relationship("HubLink", back_populates="category", cascade="all, delete-orphan")
 
 class HubLink(Base):
@@ -20,9 +21,8 @@ class HubLink(Base):
     url = Column(String, nullable=False)
     category = relationship("HubCategory", back_populates="links")
 
-# YENİ: Sistem genel ayarlarını tutacağımız tablo (Logo, Title, Favicon vb.)
 class SystemSetting(Base):
     __tablename__ = "system_settings"
 
-    key = Column(String, primary_key=True, index=True) # Örn: "site_title", "sidebar_name_1"
+    key = Column(String, primary_key=True, index=True)
     value = Column(String, nullable=False)
